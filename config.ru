@@ -1,25 +1,14 @@
-require 'grape'
-require 'warden'
-require 'mongoid'
+# encoding: utf-8
+require 'rubygems'
+require 'bundler/setup'
 require 'rack/protection'
-use Rack::Protection
+require 'rack/contrib/try_static'
+require ::File.join( ::File.dirname(__FILE__), 'app.rb' )
+
 use Rack::Session::Cookie
-Mongoid.load!("config/mongoid.yml")
+use Rack::Protection
+use Rack::TryStatic,
+  root: ::File.join( ::File.dirname(__FILE__), 'public' ),
+  urls: %w[/], try: ['.html', 'index.html', '/index.html']
 
-module Dallce
-  class API < Grape::API
-    version 'v1', using: :path
-    format :json
-
-    get '/' do
-      {id: 'sdfds'}
-    end
-
-  end
-end
-
-use Rack::Static,
-    :urls => ["/images", "/js", "/css"],
-    :root => "public"
-
-run Rack::Cascade.new [Rack::File.new("public"), Dallce::API]
+run Dallce::API
